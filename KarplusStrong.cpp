@@ -132,6 +132,8 @@ struct MassSpringModel {
 
     // XXX put code here
     velocity = sqrt(springConstant) / sqrt(2);
+    float totalEnergy = te();
+
 
     // How might we improve on this? Consider triggering at a level
     // depending on frequency according to the Fletcher-Munson curves.
@@ -149,20 +151,40 @@ struct MassSpringModel {
 };
 
 // struct KarpusStrongModel {
-//   MassSpringModel string;
-//   BooleanOscillator timer;
-//   float previous = 0;
+//   DelayLine delay;
+//   Filter filter;
 
-//   void process(AudioBuffer<float>& buffer, float note, float sampleRate) {
-//     for (int i = 0; i < buffer.getNumSamples(); ++i) {
-//       if (timer()) {
-//         string.reset();
-//         timer.frequency(0.5, sampleRate);
-//         string.recalculate(mtof(note), 0.9, sampleRate);
-//         string.trigger();
-//       }
-//       previous = string();
+//   float delayTime = 0;
+  
+//   void configure(float hertz, float seconds, float samplerate) {
+//     // given t60 (`seconds`) and frequency (`Hertz`), calculate
+//     // the gain...
+//     //
+//     // for a given frequency, our algorithm applies *gain*
+//     // frequency-many times per second. given a t60 time we can
+//     // calculate how many times (n)  gain will be applied in
+//     // those t60 seconds. we want to reduce the signal by 60dB
+//     // over t60 seconds or over n-many applications. this means
+//     // that we want gain to be a number that, when multiplied
+//     // by itself n times, becomes 60 dB quieter than it began.
+//     //
+//     // the size of the delay *is* the period of the vibration
+//     // of the string, so 1/period = frequency.
+//     delay.allocate(seconds, samplerate);
+//     delayTime = seconds;
+//   }
+  
+//   float trigger() {
+//     // fill the delay line with noise
+//     for (size_t i = 0; i < delay.size(); ++i) {
+//       delay.write(random(-1.0f, 1.0f));
 //     }
+//   }
+  
+//   float operator()() {
+//     float v = filter(delay.read(delayTime)) * gain->get();
+//     delay.write(v);
+//     return v;
 //   }
 // };
 
@@ -175,9 +197,14 @@ class KarplusStrong : public AudioProcessor {
   BooleanOscillator timer;
   MassSpringModel string;
   /// add parameters here ///////////////////////////////////////////////////
-  // button to trigger model...
-  TextButton triggerButton;
-
+  // toggle modes (mass-spring, karplus-strong)
+  AudioParameterChoice* mode;
+  // ??? button to trigger the selected model
+  // AudioParameterBool* triggerButton;
+  // toggles sympathetic strings
+  AudioParameterBool* sympathetic;
+  // mute the string output (only play the sympathetic strings)
+  AudioParameterBool* mute;
 
  public:
   KarplusStrong()
@@ -191,8 +218,12 @@ class KarplusStrong : public AudioProcessor {
         note = new AudioParameterFloat(
             {"note", 1}, "Note", NormalisableRange<float>(-2, 129, 0.01f), 40));
     /// add parameters here /////////////////////////////////////////////
-    // addParameter(triggerButton 
+    addParameter(mode = new AudioParameterChoice(
+                     {"mode", 1}, "Mode", {"Mass-Spring", "Karplus-Strong"}, 0));
     // XXX juce::getSampleRate() is not valid here
+    addParameter(sympathetic = new AudioParameterBool(
+                     {"sympathetic", 1}, "Sympathetic Strings (On/Off)", true));
+    addParameter(mute = new AudioParameterBool({"mute", 1}, "Main String (On/Off)", true));
   }
 
   float previous = 0;
