@@ -1,3 +1,4 @@
+// Ryan Millett
 // Karl Yerkes
 // 2023-01-30
 // MAT 240B ~ Audio Programming
@@ -99,6 +100,7 @@ struct MassSpringModel {
     float acceleration = 0;
 
     // XXX put code here
+    acceleration = -springConstant * position - dampingCoefficient * velocity;
 
     velocity += acceleration;
     position += velocity;
@@ -129,6 +131,7 @@ struct MassSpringModel {
     //
 
     // XXX put code here
+    velocity = sqrt(springConstant) / sqrt(2);
 
     // How might we improve on this? Consider triggering at a level
     // depending on frequency according to the Fletcher-Munson curves.
@@ -139,12 +142,30 @@ struct MassSpringModel {
     // operations.
 
     // XXX put code here
+    float omega = 2 * M_PI * frequency;
+    springConstant = omega * omega;
+    dampingCoefficient = 2 * decayTime * omega;
   }
 };
 
-struct KarpusStrongModel {
-  // XXX put code here
-};
+// struct KarpusStrongModel {
+//   MassSpringModel string;
+//   BooleanOscillator timer;
+//   float previous = 0;
+
+//   void process(AudioBuffer<float>& buffer, float note, float sampleRate) {
+//     for (int i = 0; i < buffer.getNumSamples(); ++i) {
+//       if (timer()) {
+//         string.reset();
+//         timer.frequency(0.5, sampleRate);
+//         string.recalculate(mtof(note), 0.9, sampleRate);
+//         string.trigger();
+//       }
+//       previous = string();
+//     }
+//   }
+// };
+
 
 using namespace juce;
 
@@ -154,6 +175,9 @@ class KarplusStrong : public AudioProcessor {
   BooleanOscillator timer;
   MassSpringModel string;
   /// add parameters here ///////////////////////////////////////////////////
+  // button to trigger model...
+  TextButton triggerButton;
+
 
  public:
   KarplusStrong()
@@ -167,7 +191,7 @@ class KarplusStrong : public AudioProcessor {
         note = new AudioParameterFloat(
             {"note", 1}, "Note", NormalisableRange<float>(-2, 129, 0.01f), 40));
     /// add parameters here /////////////////////////////////////////////
-
+    // addParameter(triggerButton 
     // XXX juce::getSampleRate() is not valid here
   }
 
