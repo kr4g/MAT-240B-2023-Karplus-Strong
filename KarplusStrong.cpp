@@ -76,10 +76,10 @@ struct SympatheticStrings {
   // vector of string decay times
   std::vector<float> decayTimes;
   // vector of string delay lines
-  std::vector<DelayLine> delayLines;
+  // std::vector<DelayLine> delayLines;
   // vector of string oscillators
   std::vector<BooleanOscillator> stringOscillators;
-}
+};
 
 void calculateResonance() {
   // TODO: calculate the resonance frequency and decay time for each string
