@@ -1,5 +1,5 @@
 // Ryan Millett
-// Karl Yerkes
+// from starter code by Karl Yerkes
 // 2023-01-30
 // MAT 240B ~ Audio Programming
 // Assignment 3 ~ Karplus-Strong string modeling
@@ -68,18 +68,40 @@ struct BooleanOscillator {
   }
 };
 
+struct SympatheticStrings {
+  // vector of string frequencies
+  std::vector<float> frequencies;
+  // vector of string amplitude scalars
+  std::vector<float> amplitudeScales;
+  // vector of string decay times
+  std::vector<float> decayTimes;
+  // vector of string delay lines
+  std::vector<DelayLine> delayLines;
+  // vector of string oscillators
+  std::vector<BooleanOscillator> stringOscillators;
+}
+
+void calculateResonance() {
+  // TODO: calculate the resonance frequency and decay time for each string
+  // relative to the fundamental frequency, amplitude, and spectral enevelope
+  // of the main string (the one that is being simulated)
+}
+
+
 // https://en.wikipedia.org/wiki/Harmonic_oscillator
 struct MassSpringModel {
   // this the whole state of the simulation
   //
-  float position{0};  // m
-  float velocity{0};  // m/s
+  float position{0};            // m
+  float velocity{0};            // m/s
 
   // These are cached properties of the model; They govern the behaviour. We
   // recalculate them given frequency, decay time, and playback rate.
-  //
+  // float mass{1};                // kg
   float springConstant{0};      // N/m
   float dampingCoefficient{0};  // N·s/m
+
+  float dt{1};                  // s
 
   void show() {
     printf("position:%f velocity:%f springConstant:%f dampingCoefficient:%f\n",
@@ -100,7 +122,7 @@ struct MassSpringModel {
     float acceleration = 0;
 
     // XXX put code here
-    acceleration = -springConstant * position - dampingCoefficient * velocity;
+    acceleration += -springConstant * position - dampingCoefficient * velocity;
 
     velocity += acceleration;
     position += velocity;
@@ -132,8 +154,7 @@ struct MassSpringModel {
 
     // XXX put code here
     velocity = sqrt(springConstant) / sqrt(2);
-    float totalEnergy = te();
-
+    // float totalEnergy = te();
 
     // How might we improve on this? Consider triggering at a level
     // depending on frequency according to the Fletcher-Munson curves.
@@ -199,8 +220,8 @@ class KarplusStrong : public AudioProcessor {
   /// add parameters here ///////////////////////////////////////////////////
   // toggle modes (mass-spring, karplus-strong)
   AudioParameterChoice* mode;
-  // ??? button to trigger the selected model
-  // AudioParameterBool* triggerButton;
+  // button to trigger the selected model
+  TextButton triggerButton{ TRANS("Trigger") };
   // toggles sympathetic strings
   AudioParameterBool* sympathetic;
   // mute the string output (only play the sympathetic strings)
