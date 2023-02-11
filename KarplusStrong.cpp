@@ -7,6 +7,8 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
+#include "Filter.cpp"
+
 template <typename T>
 T mtof(T m) {
   return T(440) * pow(T(2), (m - T(69)) / T(12));
@@ -81,10 +83,13 @@ struct SympatheticStrings {
   std::vector<BooleanOscillator> stringOscillators;
 };
 
-void calculateResonance() {
-  // TODO: calculate the resonance frequency and decay time for each string
-  // relative to the fundamental frequency, amplitude, and spectral enevelope
-  // of the main string (the one that is being simulated)
+// takes the current source signal output and struct of sympathetic strings
+// returns a vector of audio buffers for each string and blends them
+// with the current output
+void calculateResonance(AudioBuffer<float>& buffer, MidiBuffer&, SympatheticStrings& strings) {
+  // calculate the resonance frequency and decay time for each string
+  // relative to the spectral enevelope of the main string (the one 
+  // that is being simulated)
 }
 
 
@@ -124,8 +129,8 @@ struct MassSpringModel {
     // XXX put code here
     acceleration += -springConstant * position - dampingCoefficient * velocity;
 
-    velocity += acceleration;
-    position += velocity;
+    velocity += acceleration * dt;
+    position += velocity * dt;
 
     /*
         printf("position:%f velocity:%f springConstant:%f
@@ -171,43 +176,43 @@ struct MassSpringModel {
   }
 };
 
-// struct KarpusStrongModel {
-//   DelayLine delay;
-//   Filter filter;
+struct KarpusStrongModel {
+  DelayLine delay;
+  Filter filter;
 
-//   float delayTime = 0;
+  float delayTime = 0;
   
-//   void configure(float hertz, float seconds, float samplerate) {
-//     // given t60 (`seconds`) and frequency (`Hertz`), calculate
-//     // the gain...
-//     //
-//     // for a given frequency, our algorithm applies *gain*
-//     // frequency-many times per second. given a t60 time we can
-//     // calculate how many times (n)  gain will be applied in
-//     // those t60 seconds. we want to reduce the signal by 60dB
-//     // over t60 seconds or over n-many applications. this means
-//     // that we want gain to be a number that, when multiplied
-//     // by itself n times, becomes 60 dB quieter than it began.
-//     //
-//     // the size of the delay *is* the period of the vibration
-//     // of the string, so 1/period = frequency.
-//     delay.allocate(seconds, samplerate);
-//     delayTime = seconds;
-//   }
+  void configure(float hertz, float seconds, float samplerate) {
+    // given t60 (`seconds`) and frequency (`Hertz`), calculate
+    // the gain...
+    //
+    // for a given frequency, our algorithm applies *gain*
+    // frequency-many times per second. given a t60 time we can
+    // calculate how many times (n)  gain will be applied in
+    // those t60 seconds. we want to reduce the signal by 60dB
+    // over t60 seconds or over n-many applications. this means
+    // that we want gain to be a number that, when multiplied
+    // by itself n times, becomes 60 dB quieter than it began.
+    //
+    // the size of the delay *is* the period of the vibration
+    // of the string, so 1/period = frequency.
+    // delay.allocate(seconds, samplerate);
+    // delayTime = seconds;
+  }
   
-//   float trigger() {
-//     // fill the delay line with noise
-//     for (size_t i = 0; i < delay.size(); ++i) {
-//       delay.write(random(-1.0f, 1.0f));
-//     }
-//   }
+  float trigger() {
+    // fill the delay line with noise
+    for (size_t i = 0; i < delay.size(); ++i) {
+      delay.write(random(-1.0f, 1.0f));
+    }
+  }
   
-//   float operator()() {
-//     float v = filter(delay.read(delayTime)) * gain->get();
-//     delay.write(v);
-//     return v;
-//   }
-// };
+  float operator()() {
+    float v = filter(delay.read(delayTime)) * gain->get();
+    delay.write(v);
+    return v;
+  }
+};
 
 
 using namespace juce;
@@ -216,7 +221,7 @@ class KarplusStrong : public AudioProcessor {
   AudioParameterFloat* gain;
   AudioParameterFloat* note;
   BooleanOscillator timer;
-  MassSpringModel string;
+  KarpusStrongModel string;
   /// add parameters here ///////////////////////////////////////////////////
   // toggle modes (mass-spring, karplus-strong)
   AudioParameterChoice* mode;
@@ -282,6 +287,7 @@ class KarplusStrong : public AudioProcessor {
   /// start and shutdown callbacks///////////////////////////////////////////
   void prepareToPlay(double, int) override {
     // XXX when does this get called? seems to not get called in stand-alone
+    string.delay.allocate(delay_time->getNormalisableRange().end, samplerate);
   }
   void releaseResources() override {}
 
