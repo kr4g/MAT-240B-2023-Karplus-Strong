@@ -126,6 +126,75 @@ class DelayLine : std::vector<float> {
   }
 };
 
+// adapted from this JOS3 paper:
+// https://ccrma.stanford.edu/~jos/svf/svf.pdf
+//
+class StateVariableFilter {
+  // TODO:
+  // * parameterize q and wct
+  // * compress expressions
+  // * rename variables
+  History z1;
+  History z2;
+
+  float _high = 0;
+  float _mid = 0;
+  float _low = 0;
+
+ public:
+ void zero() { _data = 0; }
+  void step(float in, float wct, float q) {
+    _mid = z2();
+    float mul_3 = z2() * -q;
+    float mul_4 = z2() * wct;
+    float add_5 = mul_4 + z1();
+    _low = add_5;
+    float mul_6 = add_5 * -1;
+    float add_7 = mul_3 + mul_6;
+    float add_8 = in + add_7;
+    _high = add_8;
+    float mul_9 = add_8 * wct;
+    float add_10 = mul_9 + z2();
+    // https://stackoverflow.com/questions/2487653/avoiding-denormal-values-in-c
+    // float history_1_next_11 = fixdenorm(add_5);
+    // float history_2_next_12 = fixdenorm(add_10);
+    // float z1 = history_1_next_11;
+    // float z2 = history_2_next_12;
+    z1(add_5);
+    z2(add_10);
+    // for a clearer implementation, go here:
+    // https://github.com/JordanTHarris/VAStateVariableFilter/blob/master/Source/Effects/VAStateVariableFilter.cpp
+    // of maybe look at this:
+    // https://github.com/JamesWenlock/StateVariableFilter/blob/master/Source/PluginProcessor.cpp
+  }
+
+  float high() { return _high; }
+  float mid() { return _mid; }
+  float low() { return _low; }
+
+  // addapted from this Max/Gen implementation of the JOS3 paper
+  /*
+<pre><code>
+----------begin_max5_patcher----------
+646.3ocyW1saaCBFF9X6qBKNbKMxefM1d2JSUStInVpRvV1jtTU068Y9wSoU
+taPMTkSZEDBu7v2O7lWRSP20clMhx9Q1OyRRdIMIQOkZhD63Dzw1y6NzNpWF
+Rv9c2cOh1X9HI6rTOMWjQlmTb5X2I4AlT+M.6rlojO2yLxgPY2Z+H9d8dLsu
+2.UWrKbw7ljamruUt6At39eMv1IM6SMTuMeSFPHp+g0Cv3s4Y2p9Jullp9yl
+0Q22BBZzEQC+wnUlCJZJMDha1VdshVounUPKUzPxqhGZSm8L7x3ku.CEKx.7
+OBOkkpCukAR40alGw2vCEnWfV7BOD2COXeCOzFcYiJSKdgmraffDg.uoyDgJ
+v5VD3pXP22CBZ4d21qH+h.WSQLR9BBZMd20yjENSFDCxdfOJ6FdND7U8I6Hh
+wFLKtZSJq8+o3pKHKNMDCXji5c6DpNXQpfq7HW4m8oLCYwIxM49MLOC3q4Wa
+CkY3hh42I3vg.NruvUUnoBr0bQANkIDvYSHdaQzFerN3+.OH5KKzAt38+RL8
+Fpl+sbM1cZX27UsslHK+uW46YiRtnUx6DWrF5aVS2vd1f9ru3UoqBScPX0gC
+9fPlq5T4fNP4xDRVkx0Nnr8zEcBqM2juGPb7uZKhQxiSJSVV47UoL3b9zZSb
+AWJMUNjWcBDPcLCZsB03BQzXD1vtpLD5TUWXNJ0HXWqQffWi3fxMgHuk33aH
+qUHmpDwQocC3ZS.3qfQXYFW2yHy8v9u4KvBVeZ66ehMLZWrViIyaO1oOW0az
+C4ByvR8vA1S740q89iZGl7dImLdcZPetPmoF2ZnicSDJNwsUiSzMIo1Xnn8H
+aru0.BZ+X+16YBT5qo+A9hsJf.
+-----------end_max5_patcher-----------
+</code></pre>
+  */
+};
 
 // https://en.wikipedia.org/wiki/Harmonic_oscillator
 struct MassSpringModel {
@@ -212,7 +281,7 @@ struct MassSpringModel {
 
 struct KarpusStrongModel {
   DelayLine delay;  // use the DelayLine class from Delay.cpp
-  Filter filter;    // use the Filter class from Filter.cpp
+  StateVariableFilter filter;    // use the Filter class from Filter.cpp
 
   float delayTime = 0;
   
