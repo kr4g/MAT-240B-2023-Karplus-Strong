@@ -95,6 +95,36 @@ struct SympatheticStrings {
   // }
 };
 
+class DelayLine : std::vector<float> {
+  //
+  int index = 0;
+
+ public:
+  float read(float seconds_ago, float samplerate) {
+    //
+    jassert(seconds_ago < size() / samplerate);
+
+    float i = index - seconds_ago * samplerate;
+    if (i < 0) {
+      i += size();
+    }
+    return at((int)i);  // no linear interpolation
+  }
+
+  void write(float value) {
+    jassert(size() > 0);
+    at(index) = value;  // overwrite the oldest value
+
+    // handle the wrapping for circular buffer
+    index++;
+    if (index >= size()) index = 0;
+  }
+
+  void allocate(float seconds, float samplerate) {
+    // floor(seconds * samplerate) + 1 samples
+    resize((int)floor(seconds * samplerate) + 1);
+  }
+};
 
 
 // https://en.wikipedia.org/wiki/Harmonic_oscillator

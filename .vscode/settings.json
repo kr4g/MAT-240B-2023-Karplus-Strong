@@ -8,6 +8,7 @@
     "clang-format.style": "google",
     "cmake.configureOnOpen": true,
     "files.associations": {
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "vector": "cpp"
     },
 }
