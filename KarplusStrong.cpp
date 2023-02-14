@@ -123,6 +123,18 @@ class DelayLine : std::vector<float> {
   }
 };
 
+class History {
+  float _data = 0;
+
+ public:
+  float operator()(float in) {
+    float value = _data;
+    _data = in;
+    return value;
+  }
+  float operator()() { return _data; }
+};
+
 // adapted from this JOS3 paper:
 // https://ccrma.stanford.edu/~jos/svf/svf.pdf
 //
