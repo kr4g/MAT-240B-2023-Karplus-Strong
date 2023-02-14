@@ -8,9 +8,6 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
-// #include "Filter.cpp"
-
-
 template <typename T>
 T mtof(T m) {
   return T(440) * pow(T(2), (m - T(69)) / T(12));
