@@ -17,6 +17,21 @@ T dbtoa(T db) {
   return pow(T(10), db / T(20));
 }
 
+struct CircularArray {
+  std::vector<float> _data;
+  // index [0.0, size]
+  float operator[](float index) {
+    // safety
+    index = wrap(index, _data.size(), 0);
+    // need i, j, and t ~ given index
+    int i = (int)index;
+    int j = (i + 1 > _data.size() - 1) ? 0 : i + 1;
+    float t = index - i;
+    return _data[i] * (1 - t) + t * _data[i + 1];
+  }
+};
+
+
 class DelayLine : std::vector<float> {
   //
   int index = 0;
