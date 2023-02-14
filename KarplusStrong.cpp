@@ -333,8 +333,9 @@ class KarplusStrong : public AudioProcessor {
   AudioParameterFloat* gain;
   AudioParameterFloat* note;
   BooleanOscillator timer;
-  // KarpusStrongModel string;
+  KarpusStrongModel string;
   /// add parameters here ///////////////////////////////////////////////////
+  SympatheticStrings sympatheticStrings;
   // toggle modes (mass-spring, karplus-strong)
   AudioParameterChoice* mode;
   // button to trigger the selected model
@@ -384,6 +385,11 @@ class KarplusStrong : public AudioProcessor {
         string.recalculate(mtof(note->get()), r * r * r,
                            (float)getSampleRate());
         string.trigger();
+        if (sympathetic->get()) {
+          // XXX trigger sympathetic strings
+          // SympatheticStrings.calculateResonances(note->get());
+
+        }
       }
 
       left[i] = previous = string() * dbtoa(gain->get());
