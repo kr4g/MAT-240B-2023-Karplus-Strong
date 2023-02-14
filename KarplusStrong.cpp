@@ -179,8 +179,8 @@ struct MassSpringModel {
 };
 
 struct KarpusStrongModel {
-  DelayLine delay;
-  Filter filter;
+  DelayLine delay;  // use the DelayLine class from Delay.cpp
+  Filter filter;    // use the Filter class from Filter.cpp
 
   float delayTime = 0;
   
@@ -223,7 +223,7 @@ class KarplusStrong : public AudioProcessor {
   AudioParameterFloat* gain;
   AudioParameterFloat* note;
   BooleanOscillator timer;
-  KarpusStrongModel string;
+  // KarpusStrongModel string;
   /// add parameters here ///////////////////////////////////////////////////
   // toggle modes (mass-spring, karplus-strong)
   AudioParameterChoice* mode;

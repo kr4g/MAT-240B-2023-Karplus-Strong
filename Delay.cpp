@@ -31,7 +31,6 @@ struct CircularArray {
   }
 };
 
-
 class DelayLine : std::vector<float> {
   //
   int index = 0;
