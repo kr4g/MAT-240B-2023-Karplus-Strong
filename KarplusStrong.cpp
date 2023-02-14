@@ -82,17 +82,19 @@ struct SympatheticStrings {
   // vector of string delay lines
   // std::vector<DelayLine> delayLines;
   // vector of string oscillators
-  std::vector<BooleanOscillator> stringOscillators;
+  // std::vector<BooleanOscillator> stringOscillators;
+
+  // BORKEN
+  // takes the current source signal output and struct of sympathetic strings
+  // returns a vector of audio buffers for each string and blends them
+  // with the current output
+  // void calculateResonance(AudioBuffer<float>& buffer) {
+    // calculate the resonance frequency and decay time for each string
+    // relative to the spectral enevelope of the main string (the one 
+    // that is being simulated)
+  // }
 };
 
-// takes the current source signal output and struct of sympathetic strings
-// returns a vector of audio buffers for each string and blends them
-// with the current output
-void calculateResonance(AudioBuffer<float>& buffer, MidiBuffer&, SympatheticStrings& strings) {
-  // calculate the resonance frequency and decay time for each string
-  // relative to the spectral enevelope of the main string (the one 
-  // that is being simulated)
-}
 
 
 // https://en.wikipedia.org/wiki/Harmonic_oscillator
